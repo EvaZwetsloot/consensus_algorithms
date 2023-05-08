@@ -1,0 +1,40 @@
+#
+# Definition of all trackable objects
+# Identifier corresponds to Trackable ID set in Tracking Tools
+#
+rigid_bodies:
+    '0':
+        address: 3802
+        xPos: 0.780 #2.0
+        yPos: 0.730 #0
+        theta: 0.0
+    '1':
+        address: 3820
+        xPos: 0.570 #2.0
+        yPos: 1.188 #0.6
+        theta: 0.0                                                                                               
+    '2':
+        address: 3804
+        xPos: 1.320
+        yPos: 1.0
+        theta: 0.0         
+    '3':
+        address: 3735
+        xPos: 1.293
+        yPos: 0.685
+        theta: 0.0        
+    #'4':
+    #    address: 3768
+    #    xPos: 0.380
+    #    yPos: 0.608
+    #    theta: 0.0
+    #'5':
+    #    address: 3772
+    #    xPos: 0.990
+    #    yPos: 1.407
+    #    theta: 0.0
+optitrack_config:
+#	multicast_address: 192.169.209.203
+       multicast_address: 224.0.0.1
+
+#Theta in radians -> 0 to 2pi
