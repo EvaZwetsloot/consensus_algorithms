@@ -17,9 +17,10 @@ Each algorithm is implemented in its own world, by opening the world the specifi
 Code structure:
 - catkin_ws
   - src
-        - elisa3_node_cpp - Elisa3PythonController
-        - mocap_optitrack - mocap.yaml
-        - elisa3_firmware
+    - elisa3_node_cpp 
+      - Elisa3PythonController
+    - mocap_optitrack
+    - elisa3_firmware
 
 First update the firmware of the robots with the hex file that can be found in the firmware folder. You can find instruction for updating the firmware, here: https://www.gctronic.com/doc/index.php/Elisa-3. Once the firmware is updated, one of the three algorithms can be selected by using the physical selector on the robots:
 
