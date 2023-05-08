@@ -23,9 +23,9 @@ Code structure:
 
 First update the firmware of the robots with the hex file that can be found in the firmware folder. You can find instruction for updating the firmware, here: https://www.gctronic.com/doc/index.php/Elisa-3. Once the firmware is updated, one of the three algorithms can be selected by using the physical selector on the robots:
 
-Selector 14: phase algorithm
-Selector 13: ETC algorithm
-Selector 12: PETC algorithm
+- Selector 14: phase algorithm
+- Selector 13: ETC algorithm
+- Selector 12: PETC algorithm
 
 The formation and network topology can be adjusted by changing the Bx, By and L matrices in the elisa3_library.c file. Note that the Bx and By matrices for the phase algorithm need to contain the x and y distance in mm to the centre of the formatio, while for the ETC and PETC algorithms the Bx and By matrices contain the inter-robot distance in mm.
 
