@@ -1,0 +1,54 @@
+#VRML_SIM R2023a utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/floors/protos/RectangleArena.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/solids/protos/SolidBox.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/appearances/protos/CementTiles.proto"
+IMPORTABLE EXTERNPROTO "../protos/Elisa3.proto"
+IMPORTABLE EXTERNPROTO "../protos/Elisa3_DistanceSensor.proto"
+
+WorldInfo {
+  basicTimeStep 8
+}
+Viewpoint {
+  orientation -0.5773502691896258 0.5773502691896258 0.5773502691896258 2.0944
+  position 0.9598195645363905 1.0266784705837293 3.2514265627164987
+  exposure 2
+  followType "None"
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+  luminosity 0
+}
+RectangleArena {
+  translation 1 1 -7.54952e-15
+  floorSize 2 2
+  floorAppearance CementTiles {
+  }
+}
+SolidBox {
+  translation 0.636918 2.79954 0.02
+  name "box(1)"
+  size 0.2 0.2 0.1
+  appearance PBRAppearance {
+    baseColor 1 0.2 0
+    roughness 0.5
+    metalness 0
+  }
+}
+DEF Supervisor Robot {
+  children [
+    Emitter {
+      name "emitter0"
+      channel 6
+    }
+    Receiver {
+      name "receiver0"
+      channel -1
+    }
+  ]
+  controller "supervisor-petc-obstacle"
+  supervisor TRUE
+}

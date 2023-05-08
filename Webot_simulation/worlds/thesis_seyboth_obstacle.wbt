@@ -1,0 +1,76 @@
+#VRML_SIM R2023a utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/floors/protos/RectangleArena.proto"
+IMPORTABLE EXTERNPROTO "../protos/Elisa3.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/solids/protos/SolidBox.proto"
+IMPORTABLE EXTERNPROTO "../protos/Elisa3_DistanceSensor.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/appearances/protos/Asphalt.proto"
+
+WorldInfo {
+  basicTimeStep 8
+}
+Viewpoint {
+  orientation -0.5773502691896258 0.5773502691896258 0.5773502691896258 2.0944
+  position 1.000302279148179 1.0000006243853563 2.7598999044304673
+  exposure 2
+  followType "None"
+}
+TexturedBackground {
+  skybox FALSE
+}
+TexturedBackgroundLight {
+  luminosity 0
+  castShadows FALSE
+}
+RectangleArena {
+  translation 1 1 -7.54952e-15
+  floorSize 2 2
+  floorAppearance Asphalt {
+  }
+}
+SolidBox {
+  translation 0.69684 2.23675 0.02
+  rotation 0 0 -1 1.309
+  name "box(2)"
+  size 0.1 0.05 0.1
+  appearance PBRAppearance {
+    baseColor 1 0.2 0
+    roughness 0.5
+    metalness 0
+  }
+}
+SolidBox {
+  translation 0.568109 2.19468 0.02
+  size 0.1 0.05 0.1
+  appearance PBRAppearance {
+    baseColor 1 0.2 0
+    roughness 0.5
+    metalness 0
+  }
+}
+SolidBox {
+  translation 0.30283 2.24965 0.02
+  name "box(1)"
+  size 0.2 0.2 0.1
+  appearance PBRAppearance {
+    baseColor 1 0.2 0
+    roughness 0.5
+    metalness 0
+  }
+}
+DEF Supervisor Robot {
+  children [
+    Emitter {
+      name "emitter0"
+      channel 16
+    }
+    Receiver {
+      name "receiver0"
+      channel -1
+    }
+  ]
+  controller "supervisor-seyboth-obstacle"
+  supervisor TRUE
+}
