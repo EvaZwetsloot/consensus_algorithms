@@ -32,7 +32,6 @@
 
 #define RAD_2_DEG 57.2957796
 
-//#define ROBOTS 3
 #define NUM_ROBOTS 4
 #define PAYLOAD_SIZE 13
 #define ADDR_SIZE 2
@@ -41,57 +40,28 @@
 #define OVERHEAD_SIZE (2*NUM_ROBOTS+1)
 #define UNUSED_BYTES 3
 #define BULK_NB 4
-#define ROBOT_MSG 15 //15, 21, 32
+#define ROBOT_MSG 15
 
-// The usb buffer between the pc and the base-station is 64 bytes.
-// Each packet exchanged with the bast-station must contain as the
-// first byte the "command id" that at the moment can be either
-// "change robot state" (0x27) or "goto base-station bootloader" (0x28).
-// In order to optimize the throughput the packet exchanged with the radio
-// base-station contains informations to send to four different robots
-// simultaneously.
-// Each robot must be identified by a 2 byte address, thus we have:
-// 64 - 1 - 2*4 = 55 / 4 = 13 bytes usable for the payload of each robot.
-//
-// Payload content for each robot:
-// --------------------------------------------------------------------------
-// R | B | G | IR/flags | Right | Left | Leds | ...remaining 6 bytes not used
-// --------------------------------------------------------------------------
-//
-// * R, B, G: values from 0 (OFF) to 100 (ON max power)
-// * IR/flags:
-//   - first two bits are dedicated to the IRs:
-//     0x00 => all IRs off
-//     0x01 => back IR on
-//     0x02 => front IRs on
-//     0x03 => all IRs on
-//   - third bit is used for enabling/disablng IR remote control (0=>diabled, 1=>enabled)
-//   - fourth bit is used for sleep (1 => go to sleep for 1 minute)
-//   - fifth bit is used to calibrate all sensors (proximity, ground, accelerometer)
-//   - sixth bits is reserved (used by radio station)
-//   - seventh bit is used for enabling/disabling onboard obstacle avoidance
-//   - eight bit is used for enabling/disabling onboard cliff avoidance
-// * Right, Left: speed (in percentage); MSBit indicate direction: 1=forward, 0=backward; values from 0 to 100
-// * Leds: each bit define whether the corresponding led is turned on (1) or off(0); e.g. if bit0=1 then led0=on
-// * remaining bytes free to be used
-//
-// Overhead content :
-// - command: 1 byte, indicates which command the packet refer to
-// - address: 2 bytes per robot
+// VARIABLES THAT MIGHT NEED TO BE ADJUSTED
 
-//formation + laplacian
+//formation + laplacian -- change based on used algorithm
 int L[18][18] = {{2, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {-1, 2, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {-1, 0, 2, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, -1, -1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
 int Bx[18][18] = {{0, 200, 399, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {-200, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {-399, 0, 0, -199, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 199, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
 int By[18][18] = {{0, -199, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {199, 0, 0, 399, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 199, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, -399, -199, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
-
+bool phase = true; // true if you are executing the phase algorithm
+int diameter = 2;
+const int ROBOTS = 4;
+unsigned int currNumRobots = 4;
 int error = 20; //in mm
 int u_max = 30;
+
+
 float speed_max = 0;
 float speed_temp[100] = {0};
 bool reset_flag[100] = {false};
 bool reset_theta[100] = {false};
-const int ROBOTS = 4;
-unsigned int currNumRobots = 4;
+unsigned char flags;
+int phase_count = 0;
 
 //float testing = 0.0;
 // robots
@@ -1828,16 +1798,22 @@ void transferData() {
                 TX_buffer[(i * ROBOT_PACKET_SIZE) + 5] = neigh_id;
 
                 // must be changed to the angle of the robot -- live update
-                //TX_buffer[(i * ROBOT_PACKET_SIZE) + 2] = speed(rightSpeed[currPacketId * BULK_NB + i]);// speed right
-                //TX_buffer[(i * ROBOT_PACKET_SIZE) + 3] = speed(leftSpeed[currPacketId * BULK_NB + i]); // speed left
                 TX_buffer[(i * ROBOT_PACKET_SIZE) + 2] = robTheta_filtered[currPacketId * BULK_NB + i]& 0xFF;// speed right
                 TX_buffer[(i * ROBOT_PACKET_SIZE) + 3] = robTheta_filtered[currPacketId * BULK_NB + i] >> 8 & 0xFF; // speed left
 
-
+				// flagsTX also contains if robot should leave idle state
+				if (phase && phase_count < 2*diameter){
+					// Don't send the start flag unless the phase algorithm has terminated
+					flags = flagsTX[currPacketId * BULK_NB + i][0] & 0xBF;
+				}else{
+					flags = flagsTX[currPacketId * BULK_NB + i][0];
+					phase_count = 2*diameter+2;
+				}
+				
                 if (neigh_id < ROBOTS + 1) {
-                    TX_buffer[(i * ROBOT_PACKET_SIZE) + 4] = CALIBRATION_ON(flagsTX[currPacketId * BULK_NB + i][0]);
+                    TX_buffer[(i * ROBOT_PACKET_SIZE) + 4] = CALIBRATION_ON(flags);
                 } else {
-                    TX_buffer[(i * ROBOT_PACKET_SIZE) + 4] = CALIBRATION_OFF(flagsTX[currPacketId * BULK_NB + i][0]);
+                    TX_buffer[(i * ROBOT_PACKET_SIZE) + 4] = CALIBRATION_OFF(flags);
                 }
 
                 // Reset robot odometry
@@ -1857,6 +1833,7 @@ void transferData() {
                     TX_buffer[(i * ROBOT_PACKET_SIZE) + 1] |= 0x00;
                 }
 
+				// send random data to fix communication with more than 4 robots
                 TX_buffer[(i * ROBOT_PACKET_SIZE) + 1] |= (0xFC & rand()%100);
 
                 // Own position -- live update
@@ -2291,6 +2268,14 @@ void transferData() {
                             ((signed int) RX_buffer[ROBOT_MSG*i + i +12] << 8) | (unsigned char) RX_buffer[ROBOT_MSG*i + i +11];
                     robYPos[currPacketId * BULK_NB + i] =
                             ((signed int) RX_buffer[ROBOT_MSG*i + i +14] << 8) | (unsigned char) RX_buffer[ROBOT_MSG*i + i +13];
+							
+							
+					if ((currPacketId * BULK_NB + i) == 0){
+						if ((flagsTX[currPacketId * BULK_NB + i][0]&0b01000000)==0b01000000){
+							// count the number of communications of the phase algorithm
+							phase_count = phase_count + 1;
+						}
+					}
                     //printf("Received pos:: %d, %d with value: %d, %d \n", i, currPacketId * BULK_NB + i, robXPos[currPacketId * BULK_NB + i],  robYPos[currPacketId * BULK_NB + i]);
                     //printf("pos:: %d, %d, %d, with value: %d, %d \n", i, robXPos_temp1[currPacketId * BULK_NB + i],  robYPos_temp1[currPacketId * BULK_NB + i]);
                     break;
