@@ -55,7 +55,7 @@ def save_data(N, dis, delay, error, stop_time, nb_com, net, filename, conv_rate,
 
 def collect_data(network, delay, error, N, imagename, filename, conv_rate, max_delay, radius, alpha, c0, c1, h, sigma):
     L, N, dis = settings.select_network(network, N)
-    nb_positions = 1
+    nb_positions = 40
     u_max = np.zeros(nb_positions)
     u_petc = np.zeros(nb_positions)
     stop_time = np.zeros([nb_positions, 4])
@@ -64,8 +64,8 @@ def collect_data(network, delay, error, N, imagename, filename, conv_rate, max_d
 
     #Run ETC algorithm
     for n in np.arange(0,nb_positions, dtype=int):
-        _, _, _,_,_ = settings.create_network(N, L, network, imagename, False, radius)
-        x0 = settings.create_initial_pos(N, area, D, L, radius)
+        _, _, _,_,_ = settings.create_network(N, L, network, imagename, False, radius) #laplacian based positions
+        #x0 = settings.create_initial_pos(N, area, D, L, radius) #random based positions
 
         x_etc, t_events, stop_time_etc, t_hat_time, events_etc, x_hat_next, u_max2, events_etc2 = ETC.run_simulation(N, area, D, final_time, Ts, delay, L, x0, error, alpha, c0, c1)
         #Run PETC algorithm
@@ -84,9 +84,9 @@ def collect_data(network, delay, error, N, imagename, filename, conv_rate, max_d
         nb_com[n,:] = [np.sum(np.count_nonzero(events_tarry[:,0,:], axis=1)), np.sum(np.count_nonzero(events_phase[:,0,:], axis=1)), np.sum(events_etc), np.sum(events_petc)]
         delta[n,:] = np.sort(np.linalg.norm(x0-np.mean(x0,0), axis=1))
 
-    draw_sims.draw_etc(x_etc, t_events, events_etc, events_etc2, t_hat_time, stop_time_etc, N, "ETC", delay, imagename, x0)
-    draw_sims.draw_petc(x_petc[:,:, :int(stop_time_petc/h)], np.arange(0, stop_time_petc, h),events_petc, events_petc2, t_hat_time, stop_time_petc, N, "PETC", delay, imagename, x0)
-    draw_sims.draw_phase(x_phase, t_phase, dis, stop_time_phase, N, "phase", imagename, x0, events_phase)
+    #draw_sims.draw_etc(x_etc, t_events, events_etc, events_etc2, t_hat_time, stop_time_etc, N, "ETC", delay, imagename, x0)
+    #draw_sims.draw_petc(x_petc[:,:, :int(stop_time_petc/h)], np.arange(0, stop_time_petc, h),events_petc, events_petc2, t_hat_time, stop_time_petc, N, "PETC", delay, imagename, x0)
+    #draw_sims.draw_phase(x_phase, t_phase, dis, stop_time_phase, N, "phase", imagename, x0, events_phase)
     save_data(N, dis, delay, error, stop_time, nb_com, network, filename, conv_rate, max_delay, u_max, L, radius, delta, alpha, c0, c1, h, sigma, u_petc)
 
 
